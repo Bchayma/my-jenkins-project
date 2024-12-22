@@ -1,0 +1,54 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Register{% endblock %}
+
+{% block body %}
+    <h1>Register</h1>
+
+    {% for flash_error in app.flashes('verify_email_error') %}
+        <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+    {% endfor %}
+
+    {{ form_start(registrationForm) }}
+
+        <!-- First Name Field -->
+        <div class="mb-3">
+            {{ form_label(registrationForm.FirstName) }}
+            {{ form_widget(registrationForm.FirstName) }}
+            {{ form_errors(registrationForm.FirstName) }}
+        </div>
+
+        <!-- Last Name Field -->
+        <div class="mb-3">
+            {{ form_label(registrationForm.LastName) }}
+            {{ form_widget(registrationForm.LastName) }}
+            {{ form_errors(registrationForm.LastName) }}
+        </div>
+
+        <!-- Email Field -->
+        <div class="mb-3">
+            {{ form_label(registrationForm.Email) }}
+            {{ form_widget(registrationForm.Email) }}
+            {{ form_errors(registrationForm.Email) }}
+        </div>
+
+        <!-- Password Field -->
+        <div class="mb-3">
+            {{ form_label(registrationForm.plainPassword) }}
+            {{ form_widget(registrationForm.plainPassword) }}
+            {{ form_errors(registrationForm.plainPassword) }}
+        </div>
+
+        <!-- Agree to Terms Field -->
+        <div class="mb-3">
+            {{ form_label(registrationForm.agreeTerms) }}
+            {{ form_widget(registrationForm.agreeTerms) }}
+            {{ form_errors(registrationForm.agreeTerms) }}
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-primary">Register</button>
+
+    {{ form_end(registrationForm) }}
+    <p>do you already have an email?<a href="{{ path('app_login') }}">click here login</a></p>
+{% endblock %}

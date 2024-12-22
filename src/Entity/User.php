@@ -4,9 +4,13 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-class User
+#[UniqueEntity(fields: ['Email'], message: 'There is already an account with this Email')]
+class User implements UserInterface, PasswordAuthenticatedUserInterface // Implement PasswordAuthenticatedUserInterface here
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -19,7 +23,7 @@ class User
     #[ORM\Column(length: 20)]
     private ?string $LastName = null;
 
-    #[ORM\Column(length: 40)]
+    #[ORM\Column(length: 40, unique: true)]
     private ?string $Email = null;
 
     #[ORM\Column(length: 50)]
@@ -30,6 +34,9 @@ class User
 
     #[ORM\Column]
     private ?\DateTimeImmutable $created_at = null;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $isVerified = false;
 
     public function getId(): ?int
     {
@@ -105,6 +112,52 @@ class User
     {
         $this->created_at = $created_at;
 
+        return $this;
+    }
+
+    // Implementing UserInterface methods
+
+    public function getRoles(): array
+    {
+        // Return the roles as an array (Role is stored as a string)
+        return [$this->Role];
+    }
+
+    public function getSalt(): ?string
+    {
+        // No salt needed if using modern encoders like bcrypt or sodium
+        return null;
+    }
+
+    public function getUserIdentifier(): string
+    {
+        // Use email as the unique identifier for the user
+        return $this->Email;
+    }
+
+    public function eraseCredentials(): void
+    {
+        // If you store sensitive temporary data (e.g., plaintext passwords), clear it here
+    }
+
+    public function isVerified(): bool
+    {
+        return $this->isVerified;
+    }
+
+    public function setVerified(bool $isVerified): static
+    {
+        $this->isVerified = $isVerified;
+
+        return $this;
+    }
+    public function getIsVerified(): bool
+    {
+        return $this->isVerified;
+    }
+    public function setIsVerified(bool $isVerified): self
+    {
+        $this->isVerified = $isVerified;
         return $this;
     }
 }
