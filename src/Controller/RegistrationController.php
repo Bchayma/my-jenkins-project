@@ -16,6 +16,11 @@ use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Attribute\Route;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Http\Authentication\UserAuthenticatorInterface;
+use App\Security\FormLoginAuthenticator;
+
+
+
 
 class RegistrationController extends AbstractController
 {
@@ -70,9 +75,13 @@ class RegistrationController extends AbstractController
 
 
     #[Route('/verify/email', name: 'app_verify_email')]
-    public function verifyUserEmail(Request $request, EntityManagerInterface $entityManager, Security $security): Response
-    {
-        $email = $request->get('email'); // Récupérez l'email ou une autre donnée depuis l'URL
+    public function verifyUserEmail(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserAuthenticatorInterface $userAuthenticator,
+        FormLoginAuthenticator $formLoginAuthenticator
+    ): Response {
+        $email = $request->get('email'); // Récupérez l'email depuis l'URL
         $user = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
 
         if (!$user) {
@@ -81,31 +90,18 @@ class RegistrationController extends AbstractController
         }
 
         try {
+            // Vérification de l'email
             $this->emailVerifier->handleEmailConfirmation($request, $user);
-            $this->emailVerifier->sendEmailConfirmation(
-                'app_verify_email',  // nom de la route de vérification
+
+            // Authentification automatique
+            return $userAuthenticator->authenticateUser(
                 $user,
-                (new TemplatedEmail())
-                    ->from(new Address('mailer@mailer.de', 'mailer boot'))
-                    ->to($user->getEmail())
-                    ->subject('Please Confirm your Email')
-                    ->htmlTemplate('registration/confirmation_email.html.twig')
-                    ->context([
-                        'email' => $user->getEmail(), // ajoutez l'email dans le contexte
-                    ])
+                $formLoginAuthenticator,
+                $request
             );
-
-
-            // Authentifiez automatiquement l'utilisateur
-            // $security->login($user);
         } catch (VerifyEmailExceptionInterface $exception) {
             $this->addFlash('verify_email_error', $exception->getReason());
-
             return $this->redirectToRoute('app_register');
         }
-
-        $this->addFlash('success', 'Your email address has been verified.');
-
-        return $this->redirectToRoute('app_user');
     }
 }
