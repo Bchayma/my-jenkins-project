@@ -8,19 +8,31 @@ security:
             entity:
                 class: App\Entity\User
                 property: Email
-        users_in_memory: { memory: null }
+        #users_in_memory: { memory: null }
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
-            lazy: true
-            provider: users_in_memory
-            custom_authenticator: App\Security\AppAuthenticator
-            logout:
-                path: app_logout
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                username_parameter: _username
+                password_parameter: _password
+                # If you have a custom authenticator, ensure it's configured here
+                #authenticator: App\Security\AppAuthenticator
+            # provider: users_in_memory
+           # custom_authenticator: App\Security\AppAuthenticator
+            # logout:
+            #     path: app_logout
                 # where to redirect after logout
                 # target: app_any_route
+            pattern: ^/
+            #anonymous: true
+            #lazy: true
+            provider: app_user_provider
+            logout:
+                path: app_logout
 
             remember_me:
                 secret: '%kernel.secret%'
@@ -41,6 +53,7 @@ security:
     access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/verify/email, roles: IS_AUTHENTICATED_ANONYMOUSLY }
 
 when@test:
     security:

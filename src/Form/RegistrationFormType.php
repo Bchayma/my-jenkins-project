@@ -25,9 +25,6 @@ class RegistrationFormType extends AbstractType
             ->add('Email', EmailType::class, [
                 'label' => 'Email Address',
             ])
-            ->add('role', TextType::class, [
-                'label' => 'Role',
-            ])
             ->add('plainPassword', PasswordType::class, [
                 'label' => 'Password',
                 'mapped' => false, // This is important for security, as we don't want to store the plain password

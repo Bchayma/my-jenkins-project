@@ -2,6 +2,8 @@
 
 {% block body %}
     <h1>please verify your email!</h1>
+    <a href="{{ url('app_verify_email', { 'email': email }) }}">Verify your email</a>
+
 
 {% endblock %}
 
