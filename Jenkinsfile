@@ -2,20 +2,19 @@ pipeline {
     agent any
 
     stages {
-        stage('Build') {
+        stage('Create Folder') {
             steps {
-                echo 'Building the project...'
-                sh 'echo Build complete'
+                sh 'mkdir -p demo_folder'
             }
         }
-        stage('Test') {
+        stage('Create File') {
             steps {
-                echo 'Testing the project...'
+                sh 'echo "Hello from Jenkins!" > demo_folder/message.txt'
             }
         }
-        stage('Deploy') {
+        stage('Read File') {
             steps {
-                echo 'Deploying the project...'
+                sh 'cat demo_folder/message.txt'
             }
         }
     }
