@@ -5,19 +5,17 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the project...'
-                bat 'echo Build command here'
+                sh 'echo Build complete'
             }
         }
         stage('Test') {
             steps {
-                echo 'Running tests...'
-                bat 'echo Test command here'
+                echo 'Testing the project...'
             }
         }
         stage('Deploy') {
             steps {
-                echo 'Deploying the application...'
-                bat 'echo Deploy command here'
+                echo 'Deploying the project...'
             }
         }
     }
