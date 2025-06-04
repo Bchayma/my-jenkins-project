@@ -66,38 +66,59 @@ pipeline {
     }
 
     stages {
-        stage('Clean Workspace') {
+        stage('Prepare Workspace') {
             steps {
-                cleanWs()
+                /* More thorough workspace cleanup */
+                deleteDir()
+                
+                /* Verify clean state */
+                sh 'pwd && ls -la'
             }
         }
 
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/main']],
-                    extensions: [],
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/Bchayma/my-jenkins-project.git',
-                        credentialsId: '' // Add if needed
-                    ]]
-                ])
+                retry(3) {  // Adds retry for flaky connections
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: '*/main']],
+                        extensions: [
+                            [$class: 'CleanBeforeCheckout'],
+                            [$class: 'CloneOption', 
+                             depth: 1,  // Shallow clone for speed
+                             noTags: true]
+                        ],
+                        userRemoteConfigs: [[
+                            url: 'https://github.com/Bchayma/my-jenkins-project.git',
+                            credentialsId: '' // Add credentials if private
+                        ]]
+                    ])
+                }
+                
+                /* Post-checkout verification */
+                sh 'git status && git remote -v'
             }
         }
 
-        stage('Verify Files') {
+        stage('Verify Structure') {
             steps {
-                sh 'ls -la'
-                sh 'ls -la smart_campus/smart-campus/frontend' // Verify your path
+                sh '''
+                    echo "Workspace contents:"
+                    ls -la
+                    echo "\nDockerfile path contents:"
+                    ls -la smart_campus/smart-campus/frontend
+                    [ -f smart_campus/smart-campus/frontend/Dockerfile ] || exit 1
+                '''
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Verify this path matches your Dockerfile location
-                    docker.build("${IMAGE_NAME}", './smart_campus/smart-campus/frontend')
+                    // Added timeouts and explicit path verification
+                    timeout(time: 15, unit: 'MINUTES') {
+                        docker.build("${IMAGE_NAME}", './smart_campus/smart-campus/frontend')
+                    }
                 }
             }
         }
@@ -105,8 +126,8 @@ pipeline {
         stage('Run Tests / Build') {
             steps {
                 script {
-                    docker.image("${IMAGE_NAME}").inside {
-                        sh 'npm install' // Add if needed
+                    docker.image("${IMAGE_NAME}").inside('-u root') {  // Explicit user
+                        sh 'npm ci --no-audit'  // More reliable than npm install
                         sh 'npm run build'
                     }
                 }
@@ -116,7 +137,19 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deployment would happen here'
+                // Consider adding actual deployment steps
             }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline completed - cleaning up'
+            // archiveArtifacts artifacts: '**/build/**/*'  // Uncomment to save build outputs
+        }
+        failure {
+            echo 'Pipeline failed - sending notification'
+            // mail to: 'team@example.com', subject: 'Pipeline Failed'
         }
     }
 }
