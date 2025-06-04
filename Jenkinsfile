@@ -138,16 +138,21 @@ pipeline {
         }
 
         stage('Run Tests / Build') {
-            steps {
-                script {
-                    docker.image("${IMAGE_NAME}").inside('-u root') {  // Explicit user
-                        // sh 'npm ci --no-audit'  // More reliable than npm install
-                        // sh 'npm install --no-audit'
-                        sh 'cd smart_campus/smart-campus/frontend && npm install --no-audit && npm run build'
+            // steps {
+            //     script {
+            //         docker.image("${IMAGE_NAME}").inside('-u root') {  // Explicit user
+            //             // sh 'npm ci --no-audit'  // More reliable than npm install
+            //             // sh 'npm install --no-audit'
+            //             sh 'cd smart_campus/smart-campus/frontend && npm install --no-audit && npm run build'
 
-                    }
-                }
-            }
+            //         }
+            //     }
+            // }
+             steps {
+        script {
+            docker.image('my-next-app').run('-p 3000:3000 -d')
+        }
+    }
         }
 
         stage('Deploy') {
