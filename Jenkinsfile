@@ -143,10 +143,8 @@ pipeline {
                     docker.image("${IMAGE_NAME}").inside('-u root') {  // Explicit user
                         // sh 'npm ci --no-audit'  // More reliable than npm install
                         // sh 'npm install --no-audit'
-                        sh 'cd smart_campus/smart-campus/frontend && npm install --no-audit'
+                        sh 'cd smart_campus/smart-campus/frontend && npm install --no-audit && npm run build'
 
-
-                        sh 'npm run build'
                     }
                 }
             }
