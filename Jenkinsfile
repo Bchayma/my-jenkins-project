@@ -76,29 +76,43 @@ pipeline {
             }
         }
 
-        stage('Checkout Code') {
-            steps {
-                retry(3) {  // Adds retry for flaky connections
-                    checkout([
-                        $class: 'GitSCM',
-                        branches: [[name: '*/main']],
-                        extensions: [
-                            [$class: 'CleanBeforeCheckout'],
-                            [$class: 'CloneOption', 
-                             depth: 1,  // Shallow clone for speed
-                             noTags: true]
-                        ],
-                        userRemoteConfigs: [[
-                            url: 'https://github.com/Bchayma/my-jenkins-project.git',
-                            credentialsId: '' // Add credentials if private
-                        ]]
-                    ])
-                }
+        // stage('Checkout Code') {
+        //     steps {
+        //         retry(3) {  // Adds retry for flaky connections
+        //             checkout([
+        //                 $class: 'GitSCM',
+        //                 branches: [[name: '*/main']],
+        //                 extensions: [
+        //                     [$class: 'CleanBeforeCheckout'],
+        //                     [$class: 'CloneOption', 
+        //                      depth: 1,  // Shallow clone for speed
+        //                      noTags: true]
+        //                 ],
+        //                 userRemoteConfigs: [[
+        //                     url: 'https://github.com/Bchayma/my-jenkins-project.git',
+        //                     credentialsId: '' // Add credentials if private
+        //                 ]]
+        //             ])
+        //         }
                 
-                /* Post-checkout verification */
-                sh 'git status && git remote -v'
-            }
-        }
+        //         /* Post-checkout verification */
+        //         sh 'git status && git remote -v'
+        //     }
+        // }
+        stage('Checkout') {
+    steps {
+        checkout([
+            $class: 'GitSCM',
+            branches: [[name: '*/main']],
+            extensions: [[$class: 'CleanBeforeCheckout']], // pour nettoyer avant checkout
+            userRemoteConfigs: [[
+                url: 'https://github.com/Bchayma/my-jenkins-project.git'
+                // credentialsId: '' // si nécessaire
+            ]]
+        ])
+    }
+}
+
 
         stage('Verify Structure') {
             steps {
