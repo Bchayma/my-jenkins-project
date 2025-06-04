@@ -141,7 +141,9 @@ pipeline {
             steps {
                 script {
                     docker.image("${IMAGE_NAME}").inside('-u root') {  // Explicit user
-                        sh 'npm ci --no-audit'  // More reliable than npm install
+                        // sh 'npm ci --no-audit'  // More reliable than npm install
+                        sh 'npm install --no-audit'
+
                         sh 'npm run build'
                     }
                 }
