@@ -57,7 +57,8 @@
 // }
 
 pipeline {
-    agent any
+    // agent any
+    agent { label 'agent1' }
 
     environment {
         IMAGE_NAME = 'my-next-app'
